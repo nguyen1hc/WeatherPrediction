@@ -1,0 +1,74 @@
+.district-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+}
+
+.district-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.card-weather-bg {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.card-emoji {
+    font-size: 2rem;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+.card-body {
+    padding: 1rem;
+}
+
+.card-district-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 0.2rem;
+}
+
+.card-weather-desc {
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.75rem;
+    margin: 0 0 0.5rem;
+}
+
+.card-temp {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0.3rem 0;
+    letter-spacing: -1px;
+}
+
+.card-details {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.card-details span {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.2rem 0.5rem;
+    border-radius: 8px;
+}
+
+.card-rain {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: #64b5f6;
+    font-weight: 500;
+}

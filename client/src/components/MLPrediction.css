@@ -1,0 +1,217 @@
+.ml-prediction {
+    margin-top: 2rem;
+}
+
+/* Model buttons */
+.model-buttons {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+.model-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.8rem 1.2rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    cursor: pointer;
+    color: #fff;
+    transition: all 0.3s;
+    min-width: 100px;
+}
+
+.model-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--model-color, rgba(255, 255, 255, 0.2));
+    transform: translateY(-2px);
+}
+
+.model-btn.active,
+.model-btn.done {
+    border-color: var(--model-color, #6366f1);
+    background: color-mix(in srgb, var(--model-color, #6366f1) 15%, transparent);
+}
+
+.model-btn:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.model-btn.run-all {
+    --model-color: #e91e63;
+}
+
+.btn-icon {
+    font-size: 1.3rem;
+}
+
+.btn-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.btn-desc {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.btn-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-top-color: var(--model-color, #fff);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Chart */
+.ml-chart-box {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.ml-chart-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 0.8rem;
+}
+
+.ml-chart-wrapper {
+    height: 280px;
+}
+
+/* Results */
+.ml-results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+}
+
+.ml-result-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.ml-result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #fff;
+}
+
+.ml-meta {
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.ml-result-body {
+    padding: 0.5rem;
+}
+
+.ml-pred-row {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.ml-pred-row:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.pred-date {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+    width: 75px;
+    flex-shrink: 0;
+}
+
+.pred-temp {
+    font-weight: 700;
+    font-size: 0.95rem;
+    min-width: 60px;
+}
+
+.pred-conf {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.pred-rain {
+    font-size: 0.8rem;
+    color: #64b5f6;
+}
+
+.pred-cloud {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-left: auto;
+}
+
+.pred-tag {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.pred-tag.tag-0 {
+    background: rgba(76, 175, 80, 0.2);
+    color: #81c784;
+}
+
+.pred-tag.tag-1 {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffd54f;
+}
+
+.pred-tag.tag-2 {
+    background: rgba(244, 67, 54, 0.2);
+    color: #e57373;
+}
+
+/* Error */
+.ml-error {
+    padding: 0.8rem 1rem;
+    background: rgba(244, 67, 54, 0.1);
+    border: 1px solid rgba(244, 67, 54, 0.2);
+    border-radius: 10px;
+    color: #ef9a9a;
+    font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .model-buttons {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .ml-results {
+        grid-template-columns: 1fr;
+    }
+}

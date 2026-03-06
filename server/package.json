@@ -1,0 +1,27 @@
+{
+  "name": "tphcm-weather-server",
+  "version": "1.0.0",
+  "description": "Real-time weather forecast API for TPHCM districts",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "keywords": [
+    "weather",
+    "tphcm",
+    "forecast"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@tensorflow/tfjs": "^4.22.0",
+    "arima": "^0.2.8",
+    "better-sqlite3": "^12.6.2",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "ml-matrix": "^6.12.1",
+    "ml-random-forest": "^2.1.0",
+    "node-cron": "^4.2.1"
+  }
+}
