@@ -94,3 +94,4 @@ body::before {
 ::selection {
   background: rgba(99, 102, 241, 0.3);
 }
+.data-warning { margin: 16px auto; max-width: 1200px; padding: 14px 20px; border: 1px solid #eab308; border-radius: 12px; background: #422006; color: #fef3c7; }

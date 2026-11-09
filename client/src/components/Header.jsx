@@ -9,12 +9,12 @@ function Header({ lastUpdate, onRefresh }) {
                         <span className="header-icon">🌤️</span>
                         Weather Station
                     </h1>
-                    <p className="header-subtitle">Thời tiết Real-time — Bất kỳ vị trí nào</p>
+                    <p className="header-subtitle">Theo dõi thời tiết — Bất kỳ vị trí nào</p>
                 </div>
                 <div className="header-right">
                     {lastUpdate && (
                         <span className="last-update">
-                            🔄 {lastUpdate.toLocaleTimeString('vi-VN')}
+                            Dữ liệu cập nhật: {lastUpdate.toLocaleString('vi-VN')}
                         </span>
                     )}
                     <button className="refresh-btn" onClick={onRefresh} title="Cập nhật">

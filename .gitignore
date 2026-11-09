@@ -1,0 +1,5 @@
+
+# Dependencies and local runtime data
+**/node_modules/
+server/data/*
+!server/data/.gitkeep

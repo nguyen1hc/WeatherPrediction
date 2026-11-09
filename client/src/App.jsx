@@ -11,6 +11,8 @@ function App() {
   const [selectedDistrict, setSelectedDistrict] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(null);
+  const [freshness, setFreshness] = useState(null);
+  const [error, setError] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -20,9 +22,12 @@ function App() {
       ]);
       setWeatherData(weather.data || []);
       setStats(summary);
-      setLastUpdate(new Date());
+      setFreshness(weather.freshness);
+      setLastUpdate(weather.freshness?.lastUpdated ? new Date(weather.freshness.lastUpdated) : null);
+      setError(null);
     } catch (err) {
       console.error('Failed to fetch data:', err);
+      setError('Không tải được dữ liệu. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
@@ -53,6 +58,13 @@ function App() {
   return (
     <div className="app">
       <Header lastUpdate={lastUpdate} onRefresh={handleRefresh} />
+      {(error || freshness?.state === 'stale' || freshness?.state === 'missing') && (
+        <div className="data-warning" role="status">
+          {error || (freshness.state === 'missing'
+            ? 'Chưa có dữ liệu thời tiết. Hãy thêm địa điểm và chờ cập nhật.'
+            : `Dữ liệu của ${freshness.staleCount} địa điểm đã quá 30 phút. Đang hiển thị dữ liệu đã lưu.`)}
+        </div>
+      )}
       {selectedDistrict ? (
         <DistrictDetail
           districtId={selectedDistrict}

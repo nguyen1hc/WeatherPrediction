@@ -63,14 +63,14 @@ async function start() {
         initDatabase();
 
         // Start server
-        app.listen(PORT, () => {
-            console.log(`\n🚀 TPHCM Weather Server running at http://localhost:${PORT}`);
-            console.log(`📡 API docs: http://localhost:${PORT}/`);
-            console.log(`📊 Status: http://localhost:${PORT}/api/status\n`);
+        const server = app.listen(PORT, () => {
+            console.log(`\n🚀 TPHCM Weather Server running at http://localhost:${server.address().port}`);
+            console.log(`📡 API docs: http://localhost:${server.address().port}/`);
+            console.log(`📊 Status: http://localhost:${server.address().port}/api/status\n`);
         });
 
         // Start weather data collection scheduler
-        startScheduler();
+        if (process.env.DISABLE_SCHEDULER !== '1') startScheduler();
 
     } catch (error) {
         console.error('❌ Failed to start server:', error);

@@ -7,9 +7,7 @@ import cron from 'node-cron';
 import { fetchWeatherForDistrict } from './weatherApi.js';
 import {
     getActiveLocations,
-    insertCurrentWeather,
-    insertDailyForecast,
-    insertHourlyForecast,
+    storeWeather,
     insertFetchLog,
     cleanOldData,
 } from '../db/database.js';
@@ -25,9 +23,7 @@ let scheduledTask = null;
 export async function collectWeatherForLocation(location) {
     try {
         const data = await fetchWeatherForDistrict(location);
-        insertCurrentWeather(location.id, data.current);
-        insertDailyForecast(location.id, data.daily);
-        insertHourlyForecast(location.id, data.hourly);
+        storeWeather(location.id, data);
         return { success: true, location: location.id };
     } catch (error) {
         console.error(`❌ Error fetching ${location.name}:`, error.message);
@@ -57,29 +53,31 @@ export async function collectWeatherData() {
     let successCount = 0;
     let errorCount = 0;
 
-    for (const location of locations) {
-        const result = await collectWeatherForLocation(location);
-        if (result.success) successCount++;
-        else errorCount++;
-        await rateLimiter.wait();
+    try {
+        for (const location of locations) {
+            const result = await collectWeatherForLocation(location);
+            if (result.success) successCount++;
+            else errorCount++;
+            await rateLimiter.wait();
+        }
+
+        const durationMs = Date.now() - startTime;
+
+        insertFetchLog(locations.length, successCount, errorCount, durationMs);
+
+        lastFetchResult = {
+            total: locations.length,
+            success: successCount,
+            errors: errorCount,
+            durationMs,
+            timestamp: new Date().toISOString(),
+        };
+
+        console.log(`✅ Fetch complete: ${successCount}/${locations.length} success in ${durationMs}ms`);
+        return lastFetchResult;
+    } finally {
+        isRunning = false;
     }
-
-    const durationMs = Date.now() - startTime;
-
-    insertFetchLog(locations.length, successCount, errorCount, durationMs);
-
-    lastFetchResult = {
-        total: locations.length,
-        success: successCount,
-        errors: errorCount,
-        durationMs,
-        timestamp: new Date().toISOString(),
-    };
-
-    console.log(`✅ Fetch complete: ${successCount}/${locations.length} success in ${durationMs}ms`);
-    isRunning = false;
-
-    return lastFetchResult;
 }
 
 /**
@@ -87,11 +85,11 @@ export async function collectWeatherData() {
  */
 export function startScheduler(cronExpression = '*/15 * * * *') {
     // Run immediately on startup
-    collectWeatherData();
+    collectWeatherData().catch(error => console.error('Weather collection failed:', error.message));
 
     // Schedule periodic collection
     scheduledTask = cron.schedule(cronExpression, () => {
-        collectWeatherData();
+        collectWeatherData().catch(error => console.error('Weather collection failed:', error.message));
     });
 
     // Clean old data daily at 3:00 AM

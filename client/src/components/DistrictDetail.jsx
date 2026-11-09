@@ -51,7 +51,6 @@ function DistrictDetail({ districtId, onBack }) {
     }
 
     const weather = getWeatherInfo(current.weather_code);
-    const tempColor = getTempColor(current.temperature);
     const uv = getUVLevel(current.uv_index);
 
     return (

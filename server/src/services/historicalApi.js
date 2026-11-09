@@ -1,3 +1,4 @@
+import { fetchJson } from './http.js';
 /**
  * Fetch historical weather data from Open-Meteo Archive API
  * Used to bootstrap ML models with enough training data
@@ -37,13 +38,7 @@ export async function fetchHistoricalData(district, days = 90) {
     });
 
     rateLimiter.recordCall();
-    const response = await fetch(`${ARCHIVE_URL}?${params}`);
-
-    if (!response.ok) {
-        throw new Error(`Archive API error ${response.status}`);
-    }
-
-    const data = await response.json();
+    const data = await fetchJson(`${ARCHIVE_URL}?${params}`);
     return parseHistoricalData(data);
 }
 

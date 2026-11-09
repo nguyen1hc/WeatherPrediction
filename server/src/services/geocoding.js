@@ -1,3 +1,4 @@
+import { fetchJson } from './http.js';
 /**
  * Geocoding service using Open-Meteo Geocoding API (free, no key)
  * Search for locations by name → get lat/lon
@@ -19,12 +20,7 @@ export async function searchLocation(query, count = 10) {
         format: 'json',
     });
 
-    const response = await fetch(`${GEOCODING_URL}?${params}`);
-    if (!response.ok) {
-        throw new Error(`Geocoding API error: ${response.status}`);
-    }
-
-    const data = await response.json();
+    const data = await fetchJson(`${GEOCODING_URL}?${params}`);
 
     if (!data.results || data.results.length === 0) {
         return [];

@@ -1,3 +1,4 @@
+import { freshness } from '../services/freshness.js';
 /**
  * Weather API routes — now using dynamic locations from DB
  */
@@ -36,6 +37,7 @@ router.get('/weather/current', (req, res) => {
         });
 
         res.json({
+            freshness: freshness(data),
             count: enriched.length,
             timestamp: new Date().toISOString(),
             data: enriched,
@@ -172,7 +174,8 @@ router.get('/status', (req, res) => {
     const locations = getAllLocations();
 
     res.json({
-        status: 'running',
+        status: freshness(getAllLatestWeather()).state === 'fresh' && !scheduler.lastFetch?.errors ? 'running' : 'degraded',
+        freshness: freshness(getAllLatestWeather()),
         uptime: process.uptime(),
         activeLocations: locations.filter(l => l.is_active).length,
         totalLocations: locations.length,

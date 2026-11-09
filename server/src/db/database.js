@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import { readFileSync } from 'fs';
+import { readFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -8,7 +8,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 let db;
 
 export function initDatabase() {
-    const dbPath = join(__dirname, '..', '..', 'data', 'weather.db');
+    const dbPath = process.env.DB_PATH || join(__dirname, '..', '..', 'data', 'weather.db');
+    if (dbPath != ':memory:') mkdirSync(dirname(dbPath), { recursive: true });
     db = new Database(dbPath);
 
     // Enable WAL mode for better concurrent read performance
@@ -150,7 +151,7 @@ export function getLatestWeather(districtId) {
     return getDb().prepare(`
     SELECT * FROM weather_current
     WHERE district_id = ?
-    ORDER BY recorded_at DESC
+    ORDER BY recorded_at DESC, id DESC
     LIMIT 1
   `).get(districtId);
 }
@@ -158,11 +159,12 @@ export function getLatestWeather(districtId) {
 export function getAllLatestWeather() {
     return getDb().prepare(`
     SELECT wc.* FROM weather_current wc
-    INNER JOIN (
-      SELECT district_id, MAX(recorded_at) as max_time
-      FROM weather_current
-      GROUP BY district_id
-    ) latest ON wc.district_id = latest.district_id AND wc.recorded_at = latest.max_time
+    JOIN user_locations loc ON loc.id = wc.district_id AND loc.is_active = 1
+    WHERE wc.id = (
+      SELECT latest.id FROM weather_current latest
+      WHERE latest.district_id = wc.district_id
+      ORDER BY latest.recorded_at DESC, latest.id DESC LIMIT 1
+    )
     ORDER BY wc.district_id
   `).all();
 }
@@ -185,14 +187,30 @@ export function getDailyForecast(districtId) {
   `).all(districtId);
 }
 
-export function getHourlyForecast(districtId, hours = 48) {
+export function getHourlyForecast(districtId, hours = 48, now = new Date()) {
+    const timestamp = now.toISOString();
     return getDb().prepare(`
-    SELECT * FROM weather_hourly
-    WHERE district_id = ?
-      AND forecast_time >= datetime('now')
-      AND forecast_time <= datetime('now', ?)
-    ORDER BY forecast_time ASC
-  `).all(districtId, `+${hours} hours`);
+    WITH forecasts AS (
+      SELECT *, datetime(forecast_time, CASE
+        WHEN upper(substr(forecast_time, -1)) = 'Z'
+          OR instr(substr(forecast_time, 12), '+') > 0
+          OR instr(substr(forecast_time, 12), '-') > 0
+        THEN '+0 seconds'
+        ELSE '-7 hours'
+      END) AS forecast_utc
+      FROM weather_hourly
+      WHERE district_id = ?
+    )
+    SELECT * FROM forecasts
+    WHERE julianday(forecast_utc) >= julianday(?)
+      AND julianday(forecast_utc) < julianday(?, ?)
+    ORDER BY forecast_utc ASC, id ASC
+  `).all(districtId, timestamp, timestamp, `+${hours} hours`)
+        // Normalize legacy local times on read without rewriting existing databases.
+        .map(({ forecast_utc, ...row }) => ({
+            ...row,
+            forecast_time: `${forecast_utc.replace(' ', 'T')}Z`,
+        }));
 }
 
 export function getLatestFetchLog() {
@@ -228,4 +246,15 @@ export function cleanOldData() {
     DELETE FROM weather_hourly WHERE fetched_at < datetime('now', '-7 days')
   `).run();
     console.log(`🧹 Cleaned ${result.changes + result2.changes} old records`);
+}
+
+// Commit each upstream response atomically; never expose partial forecasts.
+export function storeWeather(districtId, data) {
+    return getDb().transaction(() => {
+        insertCurrentWeather(districtId, data.current);
+        getDb().prepare('DELETE FROM weather_forecast WHERE district_id = ?').run(districtId);
+        getDb().prepare('DELETE FROM weather_hourly WHERE district_id = ?').run(districtId);
+        insertDailyForecast(districtId, data.daily);
+        insertHourlyForecast(districtId, data.hourly);
+    })();
 }

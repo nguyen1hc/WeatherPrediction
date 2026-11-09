@@ -1,9 +1,11 @@
+import { fetchJson } from './http.js';
 /**
  * Open-Meteo API client for fetching weather data
  * Free API - no key required
  */
 
 import rateLimiter from '../utils/rateLimiter.js';
+import { weatherTimeToUtc } from '../utils/weatherTime.js';
 
 const BASE_URL = 'https://api.open-meteo.com/v1/forecast';
 
@@ -75,13 +77,7 @@ export async function fetchWeatherForDistrict(district) {
 
     try {
         rateLimiter.recordCall();
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            throw new Error(`API error ${response.status}: ${response.statusText}`);
-        }
-
-        const data = await response.json();
+        const data = await fetchJson(url);
         return parseWeatherResponse(data, district);
     } catch (error) {
         console.error(`❌ Error fetching weather for ${district.name}:`, error.message);
@@ -126,11 +122,17 @@ function parseWeatherResponse(data, district) {
         });
     }
 
-    // Hourly forecast (next 48h)
+    // Open-Meteo starts hourly data at local midnight, not at request time.
+    // Keep the actual upcoming 48-hour window and store explicit UTC timestamps.
+    const now = Date.now();
+    const end = now + 48 * 60 * 60 * 1000;
     const hourly = [];
-    for (let i = 0; i < Math.min(data.hourly.time.length, 48); i++) {
+    for (let i = 0; i < data.hourly.time.length; i++) {
+        const time = weatherTimeToUtc(data.hourly.time[i], data.utc_offset_seconds);
+        const timestamp = Date.parse(time);
+        if (timestamp < now || timestamp >= end) continue;
         hourly.push({
-            time: data.hourly.time[i],
+            time,
             temperature: data.hourly.temperature_2m[i],
             humidity: data.hourly.relative_humidity_2m[i],
             precipitation_probability: data.hourly.precipitation_probability[i],
